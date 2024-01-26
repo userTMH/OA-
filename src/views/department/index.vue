@@ -20,7 +20,7 @@
         </template>
       </el-tree>
     </div>
-    <el-dialog title="部门名称" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+    <el-dialog :title="title" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
         <el-form-item label="部门名称" prop="name">
           <el-input v-model="ruleForm.name" placeholder="2-10个字符"></el-input>
@@ -32,7 +32,6 @@
           <el-select v-model="ruleForm.managerId" placeholder="请选择负责人">
             <el-option v-for="(item, index) in managerIdLiat" :key="index" :label="item.managerName"
               :value="item.id"></el-option>
-            <el-option label="李四" value="2"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="部门介绍" prop="introduce">
@@ -44,30 +43,36 @@
         <el-button @click="resetFrom">取 消</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
 <script>
-import { departmentApi, addDepartment } from '@/api/department'
+import { departmentApi, addDepartment, detailDepartment, editDepartment, deleteDepartment } from '@/api/department'
+import { transListToTreeData } from '@/utils'
 export default {
   name: 'Department',
   data() {
     return {
+      //列表数据
       data: [],
       defaultProps: {
         children: 'children',
         label: 'name'
       },
+      //弹窗状态
       dialogVisible: false,
+      //详情ID
       userPid: '',
+      //负责人列表
       managerIdLiat: [],
+      //表单数据
       ruleForm: {
         name: '',
         code: '',
         managerId: '',
         introduce: '',
       },
+      //表单验证
       rules: {
         name: [
           { required: true, message: '部门名称不能为空', trigger: 'blur' },
@@ -84,55 +89,77 @@ export default {
           { required: true, message: '部门介绍不能为空', trigger: 'blur' },
           { min: 1, max: 100, message: '长度在 1 到 100 个字符', trigger: 'blur' }
         ]
-      }
+      },
+      //表单标题
+      title: '',
+      //操作状态
+      eList: '',
+      //pid
+      pid: 0
     };
   },
   created() {
     this.getDepartmentApi()
   },
   methods: {
+    //获取列表数据
     async getDepartmentApi() {
       const res = await departmentApi()
       // console.log(res);
       this.managerIdLiat = res
-      const list = this.getList(res, 0)
+      const list = transListToTreeData(res, 0)
       this.data = list
     },
-    getList(data, valueId) {
-      const arr = []
-      data.forEach((item) => {
-        if (item.pid == valueId) {
-          const children = this.getList(data, item.id)
-          item.children = children
-          arr.push(item)
-        }
-      })
-      return arr
-    },
-    command(e, id) {
-      this.dialogVisible = true
+    //操作事件
+    async command(e, id) {
       console.log(e);
+      this.eList = e
       this.userPid = id
+      // console.log(this.userPid);
+      if (e == 'add') {     //新增
+        this.dialogVisible = true
+        this.title = '新增部门'
+      } else if (e == 'edit') {       //编辑
+        this.dialogVisible = true
+        this.title = '编辑部门'
+        const res = await detailDepartment(this.userPid)
+        this.ruleForm = res
+        this.pid = res.pid
+        // console.log(this.ruleForm);
+      } else if (this.eList == 'delete') {      //删除
+        this.open()
+      }
     },
+    //确定按钮
     submitForm() {
       this.$refs.ruleForm.validate(async (valid) => {
         if (valid) {
           this.ruleForm.pid = this.userPid
-          const res = await addDepartment(this.ruleForm)
-          // console.log(res);
-          this.$message.success('新增成功')
-          this.resetFrom()
-          this.getDepartmentApi()
+          if (this.eList == 'add') {
+            const res = await addDepartment(this.ruleForm)
+            // console.log(res);
+            this.$message.success('新增成功')
+            this.resetFrom()
+            this.getDepartmentApi()
+          } else if (this.eList == 'edit') {
+            this.ruleForm.pid = this.pid
+            const res = await editDepartment(this.userPid, this.ruleForm)
+            this.$message.success('更新部门详情成功')
+            this.resetFrom()
+            this.getDepartmentApi()
+          }
         } else {
           console.log('error submit!!');
           return false;
         }
       });
     },
+    //取消
     resetFrom() {
       this.$refs.ruleForm.resetFields();
       this.dialogVisible = false
     },
+    //关闭
     handleClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -140,6 +167,27 @@ export default {
           this.resetFrom()
         })
         .catch(_ => { });
+    },
+    //删除
+    open() {
+      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const res = deleteDepartment(this.userPid)
+        console.log(res);
+        this.getDepartmentApi()
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     }
   },
 };

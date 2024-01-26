@@ -16,3 +16,28 @@ export function addDepartment(data) {
     data
   })
 }
+
+//数据详情
+export function detailDepartment(id) {
+  return service({
+    url: `/company/department/${id}`,
+    method: 'GET'
+  })
+}
+
+//编辑
+export function editDepartment(id, data) {
+  return service({
+    url: `/company/department/${id}`,
+    method: 'PUT',
+    data
+  })
+}
+
+//删除
+export function deleteDepartment(id) {
+  return service({
+    url: `/company/department/${id}`,
+    method: 'DELETE'
+  })
+}
