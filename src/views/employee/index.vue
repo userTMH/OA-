@@ -2,7 +2,7 @@
   <div class="container">
     <div class="app-container">
       <div class="left">
-        <el-input placeholder="输入员工姓名" size="mini"></el-input>
+        <el-input v-model="query.keyword" placeholder="输入员工姓名" size="mini" @change="handleSearch"></el-input>
         <el-tree :data="data" :props="defaultProps" :expand-on-click-node="false" :default-expand-all="true">
           <template v-slot="{ node, data }">
             <el-row type="flex" justify="space-between" align="middle" style="width: 100%;height: 30px;">
@@ -93,9 +93,14 @@ export default {
     },
     //右侧列表数据
     async getTable() {
-      const res = await userApi(this.query.departmentId)
-      console.log(res);
+      const res = await userApi(this.query)
+      // console.log(res);
       this.tableData = res.rows
+    },
+    //搜索
+    handleSearch() {
+      this.query.page = 1
+      this.getTable()
     }
   },
 };
