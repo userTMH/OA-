@@ -34,3 +34,28 @@ export function deltetApi(id) {
     method: 'DELETE'
   })
 }
+
+//详情
+export function getRoleDetailApi(id) {
+  return service({
+    url: `/sys/role/${id}`,
+    method: 'GET'
+  })
+}
+
+//权限数据
+export function assignPremApi(data) {
+  return service({
+    url: '/sys/role/assignPrem',
+    method: 'PUT',
+    data
+  })
+}
+
+//获取已启用的角色列表
+export function enabledApi() {
+  return service({
+    url: '/sys/role/list/enabled',
+    method: 'GET'
+  })
+}

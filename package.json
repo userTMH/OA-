@@ -19,7 +19,9 @@
   "dependencies": {
     "axios": "0.18.1",
     "core-js": "^3.25.5",
+    "cos-js-sdk-v5": "^1.6.0",
     "element-ui": "2.13.2",
+    "file-saver": "^2.0.5",
     "js-cookie": "2.2.0",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.4.4",
     "@commitlint/config-conventional": "^18.4.4",
+    "@types/file-saver": "^2.0.7",
     "@vue/cli-plugin-babel": "4.4.4",
     "@vue/cli-plugin-eslint": "4.4.4",
     "@vue/cli-plugin-unit-jest": "4.4.4",

@@ -38,7 +38,7 @@
               </el-button>
             </template>
             <template v-else>
-              <el-button type="text" size="small">
+              <el-button type="text" size="small" @click="Prem(row.id)">
                 分配权限
               </el-button>
               <el-button type="text" size="small" @click="edit(row)">
@@ -74,11 +74,22 @@
         <el-button @click="resetForm">取 消</el-button>
       </span>
     </el-dialog>
+    <!-- 权限弹窗 -->
+    <el-dialog title="分配权限" :visible.sync="dialog" width="40%" :before-close="handleClose">
+      <el-tree ref="permissionTree" :data="permissionList" show-checkbox node-key="id" default-expand-all
+        :default-checked-keys="permissionIds" :props="defaultProps" />
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="yes">确 定</el-button>
+        <el-button @click="dialog = false">取 消</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { listApi, addApi, editApi, deltetApi } from '@/api/role'
+import { listApi, addApi, editApi, deltetApi, getRoleDetailApi, assignPremApi } from '@/api/role'
+import { permisApi } from '@/api/permission'
+import { transListToTreeData } from '@/utils'
 export default {
   name: 'Role',
 
@@ -94,6 +105,8 @@ export default {
       total: 0,
       //弹窗状态
       dialogVisible: false,
+      //权限弹窗状态
+      dialog: false,
       //表单数据
       ruleForm: {
         name: '',
@@ -109,6 +122,16 @@ export default {
           { required: true, message: '角色描述不能为空', trigger: 'blur' },
         ]
       },
+      //权限数据
+      permissionList: [],
+      defaultProps: {
+        label: 'name',
+        children: 'children'
+      },
+      //回显
+      permissionIds: [],
+      //角色ID
+      Id: 0
     };
   },
   created() {
@@ -160,6 +183,7 @@ export default {
             duration: 2000,
           })
           this.resetForm()
+          this.getList()
         } else {
           console.log('error submit!!');
           return false;
@@ -194,6 +218,26 @@ export default {
       this.$message.success("删除角色成功")
       this.getList()
     },
+    //权限事件
+    async Prem(id) {
+      const res = await getRoleDetailApi(id)
+      // console.log(res);
+      this.permissionIds = res.permIds
+      this.dialog = true
+      const add = await permisApi()
+      // console.log(add);
+      this.permissionList = transListToTreeData(add, 0)
+      this.Id = id
+    },
+    //弹窗确认事件
+    async yes() {
+      const res = await assignPremApi({
+        id: this.Id,
+        permIds: this.$refs.permissionTree.getCheckedKeys()
+      })
+      this.$message.success('分配权限成功')
+      this.dialog = false
+    }
   }
 };
 </script>
