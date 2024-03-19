@@ -2,6 +2,7 @@ import layout from '@/layout'
 export default {
   path: '/detail',
   component: layout,
+  lable: 'detail',
   children: [
     {
       path: '',

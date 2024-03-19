@@ -32,6 +32,7 @@ const actions = {
     const res = await getprogileApi()
     // console.log(res)
     commit('setUser', res)
+    return res
   },
   //退出登录
   logout(context) {
